@@ -496,6 +496,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
         <span class="fc-filter-label">Học</span>
         <button class="fc-filter-btn active" id="fc-filter-all" onclick="setFlashFilter('all')">Tất cả</button>
         <button class="fc-filter-btn" id="fc-filter-unknown" onclick="setFlashFilter('unknown')">Chỉ từ chưa thuộc</button>
+        <button class="fc-filter-btn" id="fc-filter-shuffle" onclick="shuffleFlashcards()">🔀 Xáo trộn</button>
       </div>
       <div class="fc-counter" id="fc-counter">Thẻ 1 / 10</div>
       <div class="flashcard" id="flashcard" onclick="flipCard()">
@@ -831,6 +832,101 @@ const LESSONS = {
    {cn:"你好！我叫白家月。",   py:"Nǐ hǎo! Wǒ jiào Bái Jiāyuè.", vi:"Xin chào! Tôi tên là Bạch Gia Nguyệt."},
    {cn:"很高兴认识你。",       py:"Hěn gāoxìng rènshi nǐ.", vi:"Rất vui được quen biết bạn."},
    {cn:"认识你我也很高兴。",   py:"Rènshi nǐ wǒ yě hěn gāoxìng.", vi:"Quen biết bạn tôi cũng rất vui."}
+  ]
+ },
+ 7:{
+  title:"Bài 3: 我是中国人",cn:"Tôi là người Trung Quốc",count:44,
+  grammar:null,
+  words:[
+   {cn:"人",         py:"rén",           vi:"người"},
+   {cn:"的",         py:"de",            vi:"trợ từ sở hữu (của)"},
+   {cn:"我的老师",   py:"wǒ de lǎoshī",  vi:"giáo viên của tôi"},
+   {cn:"我的爸爸",   py:"wǒ de bàba",    vi:"bố của tôi"},
+   {cn:"我的妈妈",   py:"wǒ de māma",    vi:"mẹ của tôi"},
+   {cn:"越南",       py:"Yuènán",        vi:"Việt Nam"},
+   {cn:"越南人",     py:"Yuènánrén",     vi:"người Việt Nam"},
+   {cn:"中国",       py:"Zhōngguó",      vi:"Trung Quốc"},
+   {cn:"中国人",     py:"Zhōngguórén",   vi:"người Trung Quốc"},
+   {cn:"法国",       py:"Fàguó",         vi:"nước Pháp"},
+   {cn:"法国人",     py:"Fàguórén",      vi:"người Pháp"},
+   {cn:"中文",       py:"Zhōngwén",      vi:"tiếng Trung"},
+   {cn:"中文老师",   py:"Zhōngwén lǎoshī", vi:"giáo viên tiếng Trung"},
+   {cn:"汉语老师",   py:"Hànyǔ lǎoshī",  vi:"giáo viên tiếng Hán"},
+   {cn:"这",         py:"zhè",           vi:"đây / cái này"},
+   {cn:"那",         py:"nà",            vi:"kia / cái đó"},
+   {cn:"这是",       py:"zhè shì",       vi:"đây là"},
+   {cn:"那是",       py:"nà shì",        vi:"kia là"},
+   {cn:"这个",       py:"zhège",         vi:"cái này"},
+   {cn:"那个",       py:"nàge",          vi:"cái kia"},
+   {cn:"老板",       py:"lǎobǎn",        vi:"ông chủ"},
+   {cn:"同事",       py:"tóngshì",       vi:"đồng nghiệp"},
+   {cn:"谁",         py:"shéi",          vi:"ai"},
+   {cn:"你是谁",     py:"nǐ shì shéi",   vi:"bạn là ai"},
+   {cn:"朋友",       py:"péngyou",       vi:"bạn bè"},
+   {cn:"女朋友",     py:"nǚpéngyou",     vi:"bạn gái"},
+   {cn:"男朋友",     py:"nánpéngyou",    vi:"bạn trai"},
+   {cn:"好朋友",     py:"hǎo péngyou",   vi:"bạn tốt"},
+   {cn:"坏朋友",     py:"huài péngyou",  vi:"bạn xấu"},
+   {cn:"哪",         py:"nǎ",            vi:"nào / đâu"},
+   {cn:"你是哪国人？", py:"nǐ shì nǎ guó rén?", vi:"bạn là người nước nào?"},
+   {cn:"国",         py:"guó",           vi:"nước / quốc gia"},
+   {cn:"泰国",       py:"Tàiguó",        vi:"Thái Lan"},
+   {cn:"喂",         py:"wéi",           vi:"a lô"},
+   {cn:"姐姐",       py:"jiějie",        vi:"chị gái"},
+   {cn:"工作",       py:"gōngzuò",       vi:"công việc / làm việc"},
+   {cn:"还",         py:"hái",           vi:"còn / vẫn"},
+   {cn:"忙",         py:"máng",          vi:"bận"},
+   {cn:"吗",         py:"ma",            vi:"trợ từ nghi vấn"},
+   {cn:"对",         py:"duì",           vi:"đúng / phải"},
+   {cn:"太",         py:"tài",           vi:"quá / lắm"},
+   {cn:"了",         py:"le",            vi:"trợ từ hoàn thành/biến đổi"},
+   {cn:"我们",       py:"wǒmen",         vi:"chúng tôi / chúng ta"},
+   {cn:"想",         py:"xiǎng",         vi:"muốn / nghĩ"}
+  ],
+  dialogue:[],
+  translate:[
+   {vi:"Xin chào mọi người!", cn:"大家好！", py:"Dàjiā hǎo!"},
+   {vi:"Các bạn học sinh, xin chào thầy/cô!", cn:"学生们好，老师好！", py:"Xuéshengmen hǎo, lǎoshī hǎo!"},
+   {vi:"Xin hỏi, bạn tên là gì?", cn:"请问，你叫什么名字？", py:"Qǐngwèn, nǐ jiào shénme míngzi?"},
+   {vi:"Tôi rất vui được làm quen với bạn.", cn:"我很高兴认识你。", py:"Wǒ hěn gāoxìng rènshi nǐ."},
+   {vi:"Tôi cũng rất vui được làm quen với bạn.", cn:"我也很高兴认识你。", py:"Wǒ yě hěn gāoxìng rènshi nǐ."},
+   {vi:"Xin lỗi, tôi không phải là giáo viên.", cn:"对不起，我不是老师。", py:"Duìbuqǐ, wǒ bú shì lǎoshī."},
+   {vi:"Không sao.", cn:"没关系。/ 没事。", py:"Méiguānxi. / Méishì."},
+   {vi:"Đây là giáo viên tiếng Trung của tôi.", cn:"这是我的中文老师。", py:"Zhè shì wǒ de Zhōngwén lǎoshī."},
+   {vi:"Kia là giáo viên tiếng Hán của tôi.", cn:"那是我的汉语老师。", py:"Nà shì wǒ de Hànyǔ lǎoshī."},
+   {vi:"Đây là bố của tôi.", cn:"这是我的爸爸。", py:"Zhè shì wǒ de bàba."},
+   {vi:"Kia là mẹ của tôi.", cn:"那是我的妈妈。", py:"Nà shì wǒ de māma."},
+   {vi:"Bạn là người Việt Nam phải không?", cn:"你是越南人吗？", py:"Nǐ shì Yuènánrén ma?"},
+   {vi:"Tôi là người Trung Quốc.", cn:"我是中国人。", py:"Wǒ shì Zhōngguórén."},
+   {vi:"Bạn là người nước nào?", cn:"你是哪国人？", py:"Nǐ shì nǎ guó rén?"},
+   {vi:"Tôi là người Pháp.", cn:"我是法国人。", py:"Wǒ shì Fàguórén."},
+   {vi:"Người kia là ai?", cn:"那个人是谁？", py:"Nàge rén shì shéi?"},
+   {vi:"Anh ấy là bạn tốt của tôi.", cn:"他是我的好朋友。", py:"Tā shì wǒ de hǎo péngyou."},
+   {vi:"Đây là bạn gái của tôi.", cn:"这是我的女朋友。", py:"Zhè shì wǒ de nǚpéngyou."},
+   {vi:"Chị gái, chị còn bận không?", cn:"姐姐，你还忙吗？", py:"Jiějie, nǐ hái máng ma?"},
+   {vi:"Đúng vậy, chúng tôi rất bận và muốn làm việc.", cn:"对，我们太忙了，我们想工作。", py:"Duì, wǒmen tài máng le, wǒmen xiǎng gōngzuò."}
+  ],
+  practice:[
+   {cn:"大家好！", py:"Dàjiā hǎo!", vi:"Xin chào mọi người!"},
+   {cn:"学生们好，老师好！", py:"Xuéshengmen hǎo, lǎoshī hǎo!", vi:"Các bạn học sinh, xin chào thầy/cô!"},
+   {cn:"请问，你叫什么名字？", py:"Qǐngwèn, nǐ jiào shénme míngzi?", vi:"Xin hỏi, bạn tên là gì?"},
+   {cn:"我很高兴认识你。", py:"Wǒ hěn gāoxìng rènshi nǐ.", vi:"Tôi rất vui được làm quen với bạn."},
+   {cn:"我也很高兴认识你。", py:"Wǒ yě hěn gāoxìng rènshi nǐ.", vi:"Tôi cũng rất vui được làm quen với bạn."},
+   {cn:"对不起，我不是老师。", py:"Duìbuqǐ, wǒ bú shì lǎoshī.", vi:"Xin lỗi, tôi không phải là giáo viên."},
+   {cn:"没关系。", py:"Méiguānxi.", vi:"Không sao."},
+   {cn:"这是我的中文老师。", py:"Zhè shì wǒ de Zhōngwén lǎoshī.", vi:"Đây là giáo viên tiếng Trung của tôi."},
+   {cn:"那是我的汉语老师。", py:"Nà shì wǒ de Hànyǔ lǎoshī.", vi:"Kia là giáo viên tiếng Hán của tôi."},
+   {cn:"这是我的爸爸。", py:"Zhè shì wǒ de bàba.", vi:"Đây là bố của tôi."},
+   {cn:"那是我的妈妈。", py:"Nà shì wǒ de māma.", vi:"Kia là mẹ của tôi."},
+   {cn:"你是越南人吗？", py:"Nǐ shì Yuènánrén ma?", vi:"Bạn là người Việt Nam phải không?"},
+   {cn:"我是中国人。", py:"Wǒ shì Zhōngguórén.", vi:"Tôi là người Trung Quốc."},
+   {cn:"你是哪国人？", py:"Nǐ shì nǎ guó rén?", vi:"Bạn là người nước nào?"},
+   {cn:"我是法国人。", py:"Wǒ shì Fàguórén.", vi:"Tôi là người Pháp."},
+   {cn:"那个人是谁？", py:"Nàge rén shì shéi?", vi:"Người kia là ai?"},
+   {cn:"他是我的好朋友。", py:"Tā shì wǒ de hǎo péngyou.", vi:"Anh ấy là bạn tốt của tôi."},
+   {cn:"这是我的女朋友。", py:"Zhè shì wǒ de nǚpéngyou.", vi:"Đây là bạn gái của tôi."},
+   {cn:"姐姐，你还忙吗？", py:"Jiějie, nǐ hái máng ma?", vi:"Chị gái, chị còn bận không?"},
+   {cn:"对，我们太忙了，我们想工作。", py:"Duì, wǒmen tài máng le, wǒmen xiǎng gōngzuò.", vi:"Đúng vậy, chúng tôi rất bận và muốn làm việc."}
   ]
  }
 };
@@ -1881,6 +1977,7 @@ let activeLesson=4, activeTab='flash';
 
 function openLesson(n){
   activeLesson=n;
+  fcFilter='all'; fcShuffle=false;
   renderVP(n);
   document.getElementById('mlabel').textContent=LESSONS[n].title+' — Luyện Tập';
   document.getElementById('mo').classList.add('open');
@@ -1916,7 +2013,7 @@ function resetPbar(){
 /* ═══════════════════════════════════════════════
    FLASHCARD
 ═══════════════════════════════════════════════ */
-let fcWords=[], fcIdx=0, fcFlipped=false, fcFilter='all';
+let fcWords=[], fcIdx=0, fcFlipped=false, fcFilter='all', fcShuffle=false;
 const FLASH_PANEL_HTML = document.getElementById('panel-flash').innerHTML;
 
 
@@ -1929,18 +2026,42 @@ function getAllLessonFlashcards(){
   return orderedFlashcards(LESSONS[activeLesson].words || []);
 }
 
+function shuffleArray(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
 function getFilteredFlashcards(){
   const all = getAllLessonFlashcards();
-  if(fcFilter !== 'unknown') return all;
-  const state = getFlashState();
-  return all.filter(w => state[wordKey(w)] !== 'known');
+  let list = all;
+  if(fcFilter === 'unknown'){
+    const state = getFlashState();
+    list = all.filter(w => state[wordKey(w)] !== 'known');
+  }
+  return fcShuffle ? shuffleArray(list) : list;
+}
+
+/** Bật/tắt xáo trộn thẻ. Mỗi lần bấm khi đang bật sẽ xáo lại một lần nữa. */
+function shuffleFlashcards(){
+  fcShuffle = true;
+  updateFlashFilterButtons();
+  fcWords = getFilteredFlashcards();
+  fcIdx = 0; fcFlipped = false;
+  if(fcWords.length===0){showFCEmptyFilter();return;}
+  renderFC();
 }
 
 function updateFlashFilterButtons(){
   const allBtn=document.getElementById('fc-filter-all');
   const unknownBtn=document.getElementById('fc-filter-unknown');
+  const shuffleBtn=document.getElementById('fc-filter-shuffle');
   if(allBtn) allBtn.classList.toggle('active', fcFilter==='all');
   if(unknownBtn) unknownBtn.classList.toggle('active', fcFilter==='unknown');
+  if(shuffleBtn) shuffleBtn.classList.toggle('active', fcShuffle);
 }
 
 function ensureFlashPanel(){
