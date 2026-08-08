@@ -54,11 +54,37 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .tag.cur{background:#ff4d96;color:white;border-color:#ff4d96;}
 .lcard .lic{position:absolute;top:13px;right:13px;font-size:15px;}
 
-/* TIP */
-.tip{background:linear-gradient(135deg,#fff0f9,#ffe8f4);border:2px solid var(--p200);border-radius:16px;padding:18px 22px;margin-bottom:24px;display:flex;gap:12px;align-items:flex-start;}
-.tip .ti{font-size:22px;flex-shrink:0;}
-.tip p{font-size:13px;color:var(--tm);line-height:1.6;}
-.tip strong{color:var(--p600);}
+/* MARK AS COMPLETED BUTTON (replaces .lic icon, top-right of each lesson card) */
+.lesson-complete-btn{position:absolute;top:12px;right:12px;z-index:2;border:1.5px solid var(--p200);background:white;color:var(--p500);font-family:'Quicksand',sans-serif;font-weight:700;font-size:10px;letter-spacing:.2px;padding:6px 10px 6px 8px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:4px;transition:all .18s;white-space:nowrap;}
+.lesson-complete-btn:hover{background:var(--p400);border-color:var(--p400);color:white;box-shadow:0 4px 12px rgba(255,77,150,.25);}
+.lesson-complete-btn .cbtn-ic{font-size:12px;}
+.lesson-complete-btn.done{background:linear-gradient(135deg,var(--p400),var(--p600));border-color:var(--p500);color:white;}
+.lesson-complete-btn.done:hover{filter:brightness(1.05);}
+
+/* PER-LESSON VOCAB PROGRESS (sits directly below the lesson title on its own card) */
+.lesson-card-progress{margin:2px 0 10px;}
+.lesson-card-progress-top{display:flex;justify-content:space-between;align-items:center;font-size:10px;font-weight:800;color:var(--ts);margin-bottom:4px;}
+.lesson-card-progress-top .lcp-count{color:var(--p500);}
+.lesson-card-progress-track{height:7px;background:var(--p50);border-radius:999px;overflow:hidden;border:1px solid var(--p100);}
+.lesson-card-progress-fill{height:100%;width:0;background:linear-gradient(90deg,#f9a8d4,var(--p500));border-radius:999px;transition:width .6s cubic-bezier(.22,1,.36,1);}
+
+/* OVERALL HSK 1 / HSK 2 VOCAB PROGRESS (top of page, replaces Nana's Tips) */
+.overview-box{background:white;border-radius:18px;padding:20px 22px;border:2px solid var(--p100);margin-bottom:24px;box-shadow:0 12px 32px rgba(232,56,124,.08);position:relative;overflow:hidden;}
+.overview-box:before{content:"";position:absolute;inset:0 0 auto;height:4px;background:linear-gradient(90deg,var(--p300),var(--p500),#8b5cf6);}
+.overview-head{display:flex;align-items:center;gap:8px;margin-bottom:14px;}
+.overview-head .oi{font-size:18px;}
+.overview-head h3{font-family:'Playfair Display',serif;font-size:17px;color:var(--td);}
+.overview-tabs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px;}
+.ov-tab{padding:7px 16px;border-radius:40px;border:2px solid var(--p200);background:white;color:var(--tm);font-family:'Quicksand',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:all .18s;}
+.ov-tab:hover{border-color:var(--p400);}
+.ov-tab.active{background:var(--p400);border-color:var(--p400);color:white;box-shadow:0 4px 14px rgba(255,77,150,.3);}
+.overview-col{background:linear-gradient(135deg,#fff7fb,white);border:1px solid var(--p100);border-radius:14px;padding:14px 16px;}
+.overview-col-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:9px;}
+.overview-col-label{font-size:13px;font-weight:800;color:var(--p500);letter-spacing:.4px;}
+.overview-col-count{font-size:12px;font-weight:700;color:var(--tm);}
+.overview-col-track{height:11px;background:var(--p50);border-radius:999px;overflow:hidden;border:1px solid var(--p100);margin-bottom:7px;}
+.overview-col-fill{height:100%;width:0;background:linear-gradient(90deg,var(--p400),var(--p600));border-radius:999px;transition:width .8s cubic-bezier(.22,1,.36,1);}
+.overview-col-pct{font-size:12px;font-weight:800;color:var(--ts);text-align:right;}
 
 /* MODAL */
 .mo{position:fixed;inset:0;background:rgba(61,26,46,.55);backdrop-filter:blur(4px);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;opacity:0;pointer-events:none;transition:opacity .28s;}
@@ -242,6 +268,15 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   .hsk-stats{width:100%;min-width:0;grid-template-columns:repeat(3,1fr);}
   .hsk-stat{padding:10px 8px;}
   .hsk-stat-num{font-size:22px;}
+
+  /* Scrollable lesson list so long lists don't push the whole page down */
+  .lessons-grid{max-height:62vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:2px 6px 6px 2px;scroll-behavior:smooth;}
+  .lessons-grid::-webkit-scrollbar{width:6px;}
+  .lessons-grid::-webkit-scrollbar-thumb{background:var(--p200);border-radius:10px;}
+
+  /* Keep the lesson content box perfectly fixed/centered while open on mobile */
+  body.modal-locked{position:fixed;left:0;right:0;overflow:hidden;}
+  .modal{max-height:92vh;}
 }
 
 /* PINYIN */
@@ -359,13 +394,13 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 </header>
 
 <nav class="nav-pills">
-  <button class="npill active" onclick="setLevel(this,'pinyin')">Pinyin</button>
-  <button class="npill" onclick="setLevel(this,'hsk1')">HSK 1</button>
-  <button class="npill" onclick="setLevel(this,'hsk2')">HSK 2</button>
-  <button class="npill" onclick="setLevel(this,'hsk3')">HSK 3</button>
-  <button class="npill" onclick="setLevel(this,'hsk4')">HSK 4</button>
-  <button class="npill" onclick="setLevel(this,'daily')">Hội Thoại</button>
-  <button class="npill" onclick="setLevel(this,'song')">Bài Hát</button>
+  <button class="npill active" data-lvl="pinyin" onclick="setLevel(this,'pinyin')">Pinyin</button>
+  <button class="npill" data-lvl="hsk1" onclick="setLevel(this,'hsk1')">HSK 1</button>
+  <button class="npill" data-lvl="hsk2" onclick="setLevel(this,'hsk2')">HSK 2</button>
+  <button class="npill" data-lvl="hsk3" onclick="setLevel(this,'hsk3')">HSK 3</button>
+  <button class="npill" data-lvl="hsk4" onclick="setLevel(this,'hsk4')">HSK 4</button>
+  <button class="npill" data-lvl="daily" onclick="setLevel(this,'daily')">Hội Thoại</button>
+  <button class="npill" data-lvl="song" onclick="setLevel(this,'song')">Bài Hát</button>
 </nav>
 <div class="voice-speed-bar" id="voice-speed-control">
   <span class="voice-speed-label">🔊 Tốc độ AI</span>
@@ -375,9 +410,19 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   <button class="voice-speed-btn" data-rate="1.25" onclick="setTtsRate(1.25)">1.25x</button>
 </div>
 
-<div class="tip">
-  <span class="ti">💡</span>
-  <p><strong>Mẹo của Nana:</strong> Học flashcard trước → làm bài tập → ôn hội thoại. Mỗi ngày chỉ cần 10 phút! 🎀</p>
+<div class="overview-box" id="overview-box">
+  <div class="overview-head"><span class="oi">📊</span><h3>Tiến trình từ vựng</h3></div>
+  <div class="overview-tabs" id="overview-tabs">
+    <button class="ov-tab" data-lvl="hsk1" onclick="setLevel(this,'hsk1')">HSK 1</button>
+    <button class="ov-tab" data-lvl="hsk2" onclick="setLevel(this,'hsk2')">HSK 2</button>
+    <button class="ov-tab" data-lvl="hsk3" onclick="setLevel(this,'hsk3')">HSK 3</button>
+    <button class="ov-tab" data-lvl="hsk4" onclick="setLevel(this,'hsk4')">HSK 4</button>
+  </div>
+  <div class="overview-col">
+    <div class="overview-col-top"><span class="overview-col-label" id="ov-label">HSK 1</span><span class="overview-col-count" id="ov-count">0/0 từ</span></div>
+    <div class="overview-col-track"><div class="overview-col-fill" id="ov-fill"></div></div>
+    <div class="overview-col-pct" id="ov-pct">0%</div>
+  </div>
 </div>
 
 <div id="pinyin-section">
@@ -494,7 +539,6 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
   </div>
   <div class="hsk-total-track"><div class="hsk-total-fill" id="hsk-total-fill"></div></div>
   <div class="hsk-total-label"><span id="hsk-total-text">0 / 0 từ đã học</span><span id="hsk-lesson-text">0 bài</span></div>
-  <div class="lesson-progress-list" id="hsk-progress-list"></div>
 </div>
 
 </div><!-- /wrap -->
@@ -2017,9 +2061,13 @@ hsk1LessonIds.forEach(i=>{
   const tagHtml=lessonTags.map(t=>`<span class="tag ${t.c}">${t.t}</span>`).join('');
   const extra = i===4?'style="border-color:var(--p300);background:linear-gradient(135deg,#fff5f9,white);"':'';
   grid.innerHTML+=`<div class="lcard" ${extra} onclick="openLesson(${i})">
-    <span class="lic">${icons[i] || '📘'}</span>
+    <button class="lesson-complete-btn" id="complete-btn-${i}" onclick="markLessonCompleted(${i}, event)"><span class="cbtn-ic">✓</span>Đánh dấu hoàn thành</button>
     <div class="lnum">HSK 1 · BÀI ${i}</div>
     <div class="ltitle">${L.title.replace(/^Bài \d+: /,'')}</div>
+    <div class="lesson-card-progress">
+      <div class="lesson-card-progress-top"><span>Từ vựng</span><span class="lcp-count" id="card-count-${i}">0/0</span></div>
+      <div class="lesson-card-progress-track"><div class="lesson-card-progress-fill" id="card-fill-${i}"></div></div>
+    </div>
     <div class="lcn" style="font-family:'Noto Sans SC',sans-serif;">${L.cn}</div>
     <div class="ltags">${tagHtml}</div>
   </div>`;
@@ -2035,9 +2083,13 @@ function renderLessonGrid(targetId, prefix, label, icons){
     const no=parseInt(id.replace(prefix,''),10);
     const extra = idx===0?'style="border-color:var(--p300);background:linear-gradient(135deg,#fff5f9,white);"':'';
     target.innerHTML+=`<div class="lcard" ${extra} onclick="openLesson('${id}')">
-      <span class="lic">${icons[idx] || '📘'}</span>
+      <button class="lesson-complete-btn" id="complete-btn-${id}" onclick="markLessonCompleted('${id}', event)"><span class="cbtn-ic">✓</span>Đánh dấu hoàn thành</button>
       <div class="lnum">${label} · BÀI ${no}</div>
       <div class="ltitle">${L.title.replace(/^HSK\d · Bài \d+\s*[-:]\s*/,'').replace(/^HSK\d · Bài \d+:\s*/,'')}</div>
+      <div class="lesson-card-progress">
+        <div class="lesson-card-progress-top"><span>Từ vựng</span><span class="lcp-count" id="card-count-${id}">0/0</span></div>
+        <div class="lesson-card-progress-track"><div class="lesson-card-progress-fill" id="card-fill-${id}"></div></div>
+      </div>
       <div class="lcn" style="font-family:'Noto Sans SC',sans-serif;">${L.cn}</div>
       <div class="ltags"><span class="tag cur">${idx===0?'Đang học':'Mới thêm'}</span><span class="tag">${L.count} từ/câu</span></div>
     </div>`;
@@ -2056,9 +2108,13 @@ hsk3LessonIds.forEach((id,idx)=>{
   const no=parseInt(id.replace('h3b',''),10);
   const extra = no===1?'style="border-color:var(--p300);background:linear-gradient(135deg,#fff5f9,white);"':'';
   hsk3Grid.innerHTML+=`<div class="lcard" ${extra} onclick="openLesson('${id}')">
-    <span class="lic">${hsk3Icons[idx] || '📘'}</span>
+    <button class="lesson-complete-btn" id="complete-btn-${id}" onclick="markLessonCompleted('${id}', event)"><span class="cbtn-ic">✓</span>Đánh dấu hoàn thành</button>
     <div class="lnum">HSK 3 · BÀI ${no}</div>
     <div class="ltitle">${L.title.replace(/^HSK3 · Bài \d+: /,'')}</div>
+    <div class="lesson-card-progress">
+      <div class="lesson-card-progress-top"><span>Từ vựng</span><span class="lcp-count" id="card-count-${id}">0/0</span></div>
+      <div class="lesson-card-progress-track"><div class="lesson-card-progress-fill" id="card-fill-${id}"></div></div>
+    </div>
     <div class="lcn" style="font-family:'Noto Sans SC',sans-serif;">${L.cn}</div>
     <div class="ltags"><span class="tag cur">${no<=3?'Đang học':'Mới thêm'}</span><span class="tag">${L.count} từ/câu</span></div>
   </div>`;
@@ -2070,9 +2126,13 @@ const dailyGrid = document.getElementById('daily-cards');
 dailyLessons.forEach(([id],idx)=>{
   const L=LESSONS[id];
   dailyGrid.innerHTML+=`<div class="lcard" onclick="openLesson('${id}')">
-    <span class="lic">${['💬','🎁','🧭','📚','🧺','🏥','🛍️'][idx]}</span>
+    <button class="lesson-complete-btn" id="complete-btn-${id}" onclick="markLessonCompleted('${id}', event)"><span class="cbtn-ic">✓</span>Đánh dấu hoàn thành</button>
     <div class="lnum">HỘI THOẠI · BÀI ${idx+1}</div>
     <div class="ltitle">${L.title.replace(/^Hội thoại \d+: /,'')}</div>
+    <div class="lesson-card-progress">
+      <div class="lesson-card-progress-top"><span>Từ vựng</span><span class="lcp-count" id="card-count-${id}">0/0</span></div>
+      <div class="lesson-card-progress-track"><div class="lesson-card-progress-fill" id="card-fill-${id}"></div></div>
+    </div>
     <div class="lcn" style="font-family:'Noto Sans SC',sans-serif;">${L.cn}</div>
     <div class="ltags"><span class="tag cur">Có bài tập</span><span class="tag">${L.count} từ/câu</span></div>
   </div>`;
@@ -2127,14 +2187,15 @@ function animateCount(el,value,suffix=''){
 function renderHskDashboard(level){
   const box=document.getElementById('hsk-dashboard');
   const config=HSK_DASHBOARDS[level];
-  if(!box || !config){ if(box) box.style.display='none'; return; }
+  if(!box) return;
+  // HSK1 & HSK2 overall progress now lives in the overview box at the top of the page,
+  // and each lesson's own progress lives on its own card, so this box is only used for HSK3/4.
+  if(!config || level==='hsk1' || level==='hsk2'){ box.style.display='none'; return; }
   const ids=config.ids();
   const rows=ids.map(id=>{
-    const L=LESSONS[id];
     const total=lessonWords(id).length;
     const learned=lessonLearnedCount(id);
-    const no=String(id).replace(/^h\d+b/,'');
-    return {id,L,total,learned,no,pct:total?Math.round((learned/total)*100):0};
+    return {id,total,learned};
   });
   const total=rows.reduce((sum,row)=>sum+row.total,0);
   const learned=rows.reduce((sum,row)=>sum+row.learned,0);
@@ -2149,19 +2210,66 @@ function renderHskDashboard(level){
   document.getElementById('hsk-total-text').textContent=`${learned} / ${total} từ đã học`;
   document.getElementById('hsk-lesson-text').textContent=`${ids.length} bài`;
   requestAnimationFrame(()=>{document.getElementById('hsk-total-fill').style.width=pct+'%';});
+}
 
-  const list=document.getElementById('hsk-progress-list');
-  list.innerHTML=rows.map(row=>`
-    <div class="lesson-progress-item">
-      <div class="lesson-progress-top">
-        <div class="lesson-progress-name">Bài ${row.no}: ${(row.L.title || '').replace(/^.*?Bài \d+\s*[-:]\s*/,'').replace(/^Bài \d+:\s*/,'')}</div>
-        <div class="lesson-progress-count">${row.learned}/${row.total}</div>
-      </div>
-      <div class="lesson-progress-track"><div class="lesson-progress-fill" data-pct="${row.pct}"></div></div>
-    </div>`).join('');
-  requestAnimationFrame(()=>{
-    list.querySelectorAll('.lesson-progress-fill').forEach(el=>{el.style.width=(el.dataset.pct || 0)+'%';});
-  });
+/* HSK 1–4 vocabulary progress — shown at the top of the page, switches by tab (synced with the main nav) */
+let overviewLevel='hsk1';
+function renderOverview(level){
+  if(level && HSK_DASHBOARDS[level]) overviewLevel=level;
+  const config=HSK_DASHBOARDS[overviewLevel];
+  document.querySelectorAll('.ov-tab').forEach(t=>t.classList.toggle('active', t.dataset.lvl===overviewLevel));
+  if(!config) return;
+  const ids=config.ids();
+  const total=ids.reduce((sum,id)=>sum+lessonWords(id).length,0);
+  const learned=ids.reduce((sum,id)=>sum+lessonLearnedCount(id),0);
+  const pct=total?Math.round((learned/total)*100):0;
+  const labelEl=document.getElementById('ov-label');
+  const countEl=document.getElementById('ov-count');
+  const fillEl=document.getElementById('ov-fill');
+  const pctEl=document.getElementById('ov-pct');
+  if(labelEl) labelEl.textContent=config.label;
+  if(countEl) countEl.textContent=`${learned}/${total} từ`;
+  if(pctEl) pctEl.textContent=pct+'%';
+  if(fillEl) requestAnimationFrame(()=>{fillEl.style.width=pct+'%';});
+}
+
+/* Per-lesson vocab progress + Mark as Completed button, rendered on each lesson card */
+function updateLessonCardUI(id){
+  const total=lessonWords(id).length;
+  const learned=lessonLearnedCount(id);
+  const pct=total?Math.round((learned/total)*100):0;
+  const key=String(id);
+  const countEl=document.getElementById(`card-count-${key}`);
+  const fillEl=document.getElementById(`card-fill-${key}`);
+  const btnEl=document.getElementById(`complete-btn-${key}`);
+  if(countEl) countEl.textContent=`${learned}/${total}`;
+  if(fillEl) fillEl.style.width=pct+'%';
+  if(btnEl){
+    const complete = total>0 && learned>=total;
+    btnEl.classList.toggle('done', complete);
+    btnEl.innerHTML = complete
+      ? `<span class="cbtn-ic">✓</span>Đã hoàn thành`
+      : `<span class="cbtn-ic">✓</span>Đánh dấu hoàn thành`;
+    btnEl.title = complete ? 'Đã đánh dấu hoàn thành từ vựng bài học' : 'Mark as Completed';
+  }
+}
+
+function renderAllLessonCardsProgress(){
+  Object.keys(LESSONS).forEach(id=>updateLessonCardUI(id));
+}
+
+/* Click handler for the "Mark as Completed" button on a lesson card */
+function markLessonCompleted(id, ev){
+  if(ev){ ev.stopPropagation(); ev.preventDefault(); }
+  const words=lessonWords(id);
+  if(!words.length) return;
+  const state={};
+  words.forEach(w=>{ state[wordKey(w)]='known'; });
+  try{ localStorage.setItem(`nana-flash-state:${id}`, JSON.stringify(state)); }catch(e){}
+  updateLessonCardUI(id);
+  renderOverview();
+  if(typeof currentLevel!=='undefined') renderHskDashboard(currentLevel);
+  if(typeof activeLesson!=='undefined' && String(activeLesson)===String(id) && typeof renderFlashDictionary==='function') renderFlashDictionary();
 }
 
 /* ═══════════════════════════════════════════════
@@ -2389,6 +2497,8 @@ function checkPinyinQuiz(btn,choice){
 }
 updateTtsRateButtons();
 renderPinyin();
+renderAllLessonCardsProgress();
+renderOverview();
 
 /* ═══════════════════════════════════════════════
    NAV
@@ -2396,12 +2506,12 @@ renderPinyin();
 let currentLevel='pinyin';
 function setLevel(el,lvl){
   currentLevel=lvl;
-  document.querySelectorAll('.npill').forEach(p=>p.classList.remove('active'));
-  el.classList.add('active');
+  document.querySelectorAll('.npill').forEach(p=>p.classList.toggle('active', p.dataset.lvl===lvl));
   ['pinyin','hsk1','hsk2','hsk3','hsk4','daily','song'].forEach(k=>{
     document.getElementById(k+'-section').style.display=k===lvl?'':'none';
   });
   renderHskDashboard(lvl);
+  renderOverview(lvl);
 }
 
 /* ═══════════════════════════════════════════════
@@ -2415,6 +2525,7 @@ function openLesson(n){
   const lessonLevel=levelForLesson(n);
   if(lessonLevel) currentLevel=lessonLevel;
   document.getElementById('mlabel').textContent=LESSONS[n].title+' — Luyện Tập';
+  lockBodyScroll();
   document.getElementById('mo').classList.add('open');
   switchTab('flash');
   initFlash();
@@ -2422,8 +2533,23 @@ function openLesson(n){
 function closeMo(){
   stopSpeech();
   document.getElementById('mo').classList.remove('open');
+  unlockBodyScroll();
 }
 function overlayClick(e){if(e.target===document.getElementById('mo'))closeMo();}
+
+/* Lock the background page while the lesson box is open so it stays fixed and
+   never shifts or scrolls behind the modal, especially on mobile. */
+let scrollLockY=0;
+function lockBodyScroll(){
+  scrollLockY=window.scrollY || window.pageYOffset || 0;
+  document.body.style.top=`-${scrollLockY}px`;
+  document.body.classList.add('modal-locked');
+}
+function unlockBodyScroll(){
+  document.body.classList.remove('modal-locked');
+  document.body.style.top='';
+  window.scrollTo(0, scrollLockY);
+}
 
 function switchTab(t){
   ['flash','mcq','type','dict','review'].forEach(k=>{
