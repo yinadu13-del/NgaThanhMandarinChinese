@@ -631,6 +631,25 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
 .th-quiz{border-color:rgba(99,102,241,.5);text-align:left;}
 .th-call{display:flex;align-items:center;gap:10px;background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.4);padding:10px 12px;border-radius:16px;margin-bottom:12px;}
 .th-call .ic{font-size:28px;}
+.th-call.test{background:rgba(99,102,241,.2);border-color:rgba(129,140,248,.55);}
+.th-call.test small{color:#c7d2fe;}
+.th-call.mid{background:rgba(234,179,8,.18);border-color:rgba(250,204,21,.5);}
+.th-call.mid small{color:#fde68a;}
+.th-call.snitch{background:rgba(236,72,153,.18);border-color:rgba(244,114,182,.5);}
+.th-call.snitch small{color:#fbcfe8;}
+.th-testbar{display:none;align-items:center;justify-content:space-between;gap:8px;margin:-4px 0 10px;font-size:12px;font-weight:900;color:#cbd5e1;}
+.th-testbar.show{display:flex;}
+.th-testbar .dots{display:flex;gap:4px;flex-wrap:wrap;}
+.th-testbar .dots i{width:10px;height:10px;border-radius:50%;background:#334155;display:block;}
+.th-testbar .dots i.ok{background:#22c55e;}.th-testbar .dots i.bad{background:#ef4444;}.th-testbar .dots i.cur{background:#fbbf24;}
+.th-opt.ok{background:#15803d;border-color:#22c55e;}
+.th-opt.bad{background:#b91c1c;border-color:#ef4444;}
+.th-opt:disabled{cursor:default;}
+.th-test-intro .big,.th-test-res .big{font-size:58px;line-height:1.1;}
+.th-test-intro .rule{background:rgba(15,23,42,.7);border:1px solid #334155;border-radius:14px;padding:10px 12px;font-size:13px;color:#e2e8f0;line-height:1.6;margin-bottom:14px;}
+.th-test-intro .rule b{color:#fbbf24;}
+.th-test-res .score{font-size:40px;margin:4px 0;}
+.th-test-res .pass{color:#34d399;}.th-test-res .fail{color:#f87171;}
 .th-call small{display:block;font-size:11px;color:#fca5a5;font-weight:900;text-transform:uppercase;letter-spacing:.5px;}
 .th-call div div{font-size:13px;color:#f1f5f9;font-weight:700;}
 .th-timer{height:8px;background:#334155;border-radius:999px;overflow:hidden;margin-bottom:14px;}
@@ -727,7 +746,7 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <div class="th-prompt" id="th-prompt">Nhấn giữ nút <b>TRỐN (Space)</b> khi thầy cô đang viết bảng!</div>
         </div>
         <div class="th-foot">
-          <div class="th-tip">💡 <b>Mẹo:</b> Cứ 2s thầy/cô sẽ quay lại gọi tên bạn. Trả lời đúng để không bị phát hiện!</div>
+          <div class="th-tip">💡 <b>Mẹo:</b> Cứ 2s thầy/cô sẽ quay lại gọi tên bạn. Coi chừng bài kiểm tra 15 phút, thi giữa kì và bạn cùng lớp méc thầy!</div>
           <button type="button" class="th-sneak th-display" id="th-sneak">🏃‍♂️ TRỐN KHỎI LỚP</button>
         </div>
         <div class="th-modal" id="th-start"><div class="th-box">
@@ -738,11 +757,14 @@ body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellips
           <button type="button" class="th-btn th-display" onclick="thStartGame()">BẮT ĐẦU VÀO LỚP HỌC</button>
         </div></div>
         <div class="th-modal" id="th-quiz"><div class="th-box th-quiz">
-          <div class="th-call"><div class="ic">👨‍🏫</div><div><small>Giảng viên gọi tên bạn!</small><div>"Em sinh viên bàn cuối trả lời ngay câu hỏi này!"</div></div></div>
+          <div class="th-call" id="th-call"><div class="ic" id="th-call-ic">👨‍🏫</div><div><small id="th-call-t">Giảng viên gọi tên bạn!</small><div id="th-call-d">"Em sinh viên bàn cuối trả lời ngay câu hỏi này!"</div></div></div>
+          <div class="th-testbar" id="th-testbar"><span id="th-test-no">Câu 1/5</span><span class="dots" id="th-test-dots"></span></div>
           <div class="th-timer"><i id="th-timer"></i></div>
           <div class="th-qbox"><div class="th-qh" id="th-qh"></div><div class="th-qp" id="th-qp"></div><div class="th-qq" id="th-qq"></div></div>
           <div class="th-opts" id="th-opts"></div>
         </div></div>
+        <div class="th-modal" id="th-test-intro"><div class="th-box th-test-intro" id="th-test-intro-box"></div></div>
+        <div class="th-modal" id="th-test-res"><div class="th-box th-test-res" id="th-test-res-box"></div></div>
         <div class="th-modal" id="th-result"><div class="th-box">
           <div style="font-size:56px" id="th-res-icon">🎉</div>
           <h2 class="th-display">TRỐN HỌC THÀNH CÔNG!</h2>
@@ -6610,6 +6632,31 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
   let currentQuestion=null, quizTimeLeft=100, quizTimerInterval=null;
   let runPhase=0, exitTimer=0, caughtFlash=0, particles=[], lastFrame=performance.now(), globalTime=0;
   let rafId=null, words=[], queue=[], missed=[];
+  // Kiểm tra 15 phút / thi giữa kì / bạn méc thầy
+  let classmatePos=[], snitchTimer=0, snitchIdx=-1, lastSnitch=0, snitched=false;
+  let test=null;               // {kind,n,i,list:[],results:[],need}
+  let test15Count=0, midtermDone=false;
+  const SNITCH_LINES = EN ? ['Teacher! They\'re skipping!','Teacher, look!!','Someone is sneaking out!'] : ['Thưa thầy! Bạn ấy trốn học!','Thầy ơi, bạn ấy kìa!!','Thưa cô, có bạn lẻn ra!'];
+  let snitchLine='';
+  function drawSnitch(){
+    if (snitchTimer <= 0 || snitchIdx < 0 || !classmatePos[snitchIdx]) return;
+    const p = classmatePos[snitchIdx], a = Math.min(1, snitchTimer / 20);
+    ctx.save(); ctx.globalAlpha = a;
+    // tay giơ lên
+    ctx.strokeStyle = '#fcd9b6'; ctx.lineWidth = 5 * p.sc; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(p.x + 10 * p.sc, p.y + 14 * p.sc); ctx.lineTo(p.x + 18 * p.sc, p.y - 22 * p.sc); ctx.stroke();
+    ctx.font = (18 * p.sc + 6) + 'px sans-serif'; ctx.fillText('🙋', p.x + 8 * p.sc, p.y - 24 * p.sc);
+    // bong bóng lời nói
+    const fs = Math.max(12, Math.min(16, TW / 55));
+    ctx.font = 'bold ' + fs + "px 'Nunito', sans-serif";
+    const tw = ctx.measureText(snitchLine).width + 20, bh = fs + 16;
+    let bx = Math.min(TW - tw - 6, Math.max(6, p.x - tw / 2)), by = p.y - 40 * p.sc - bh - 14;
+    ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#ec4899'; ctx.lineWidth = 2.5;
+    roundRect(bx, by, tw, bh, 10); ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(p.x - 6, by + bh); ctx.lineTo(p.x + 4, by + bh + 12); ctx.lineTo(p.x + 10, by + bh); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#be185d'; ctx.textBaseline = 'middle'; ctx.fillText(snitchLine, bx + 10, by + bh / 2 + 1);
+    ctx.restore();
+  }
 
         const runners = [
             { face: 0, label: "BẠN",      labelColor: "#fde047", shirt: "#f59e0b", shirtDark: "#b45309", pants: "#1e3a8a", seat: { x: 0.76, y: 0.93 }, lag: 0 },
@@ -6864,6 +6911,7 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
             drawTeacher(w, h);
             drawRunners(w, h);
             drawParticles();
+            drawSnitch();
 
             if (caughtFlash > 0) {
                 ctx.save();
@@ -6877,6 +6925,7 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
         }
 
         function drawDesksAndStudents(w, h) {
+            classmatePos = [];
             const rows = [
                 { y: 0.52, scale: 0.7 },
                 { y: 0.65, scale: 0.85 },
@@ -6908,6 +6957,7 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
                     let tilt = Math.sin(globalTime * 0.0015 + n) * 0.06;
                     if (isSneaking && gameState === 'PLAYING') tilt += 0.25;
                     drawFace(faceIdx, cx, deskY - 34 * sc + bob, 34 * sc, tilt);
+                    classmatePos.push({ x: cx, y: deskY - 34 * sc + bob, sc: sc });
 
                     ctx.fillStyle = "#b45309";
                     ctx.fillRect(cx - 35 * sc, deskY, 70 * sc, 25 * sc);
@@ -6996,7 +7046,10 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
     const dt=Math.min(3,(now-lastFrame)/16.67); lastFrame=now; globalTime=now;
     particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt;}); particles=particles.filter(p=>p.life>0);
     if(caughtFlash>0) caughtFlash-=dt;
+    if(snitchTimer>0) snitchTimer-=dt;
     if(gameState==='PLAYING'){
+      // Bạn cùng lớp méc thầy (chỉ khi đang lẻn đi, mỗi lần cách nhau ít nhất 3 giây)
+      if(isSneaking && progress>8 && Date.now()-lastSnitch>3000 && Math.random()<0.0045*dt){ snitch(); }
       if(isSneaking){
         progress+=0.35*dt; runPhase+=0.32*dt;
         if(Math.random()<0.1) playSound('step');
@@ -7027,18 +7080,51 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
     sgShuffle(opts);
     return {w,vi2cn,opts,answer:opts.indexOf(w)};
   }
-  function teacherTurnsToAskQuestion(){
-    teacherState='TURNED'; isSneaking=false; sneakBtnUp();
+  function snitch(){
+    lastSnitch=Date.now(); snitched=true;
+    snitchIdx=classmatePos.length?Math.floor(Math.random()*classmatePos.length):-1;
+    snitchLine=SNITCH_LINES[Math.floor(Math.random()*SNITCH_LINES.length)];
+    snitchTimer=110;
+    isSneaking=false; sneakBtnUp();
     playSound('alert');
-    document.getElementById('th-alert').classList.add('show');
-    gameState='QUIZ';
-    setTimeout(()=>{ if(gameState==='QUIZ') openQuizModal(); },400);
+    const al=document.getElementById('th-alert');
+    al.textContent=EN?'🙋 A CLASSMATE TOLD THE TEACHER!':'🙋 BẠN CÙNG LỚP MÉC THẦY!';
+    al.classList.add('show');
+    gameState='QUIZ';           // đứng hình ngay
+    lastTeacherTurnTime=Date.now();
+    setTimeout(()=>{ if(gameState==='QUIZ'&&!test) teacherTurnsToAskQuestion(true); },700);
   }
-  function openQuizModal(){
+  function chooseKind(){
+    if(!midtermDone && progress>=45 && Math.random()<(snitched?0.55:0.35)) return 'midterm';
+    if(test15Count<2 && progress>=12 && Math.random()<(snitched?0.5:0.22)) return 'test15';
+    return 'single';
+  }
+  function teacherTurnsToAskQuestion(fromSnitch){
+    teacherState='TURNED'; isSneaking=false; sneakBtnUp();
+    const al=document.getElementById('th-alert');
+    if(!fromSnitch){ playSound('alert'); al.textContent=EN?'⚠️ THE TEACHER IS TURNING!':'⚠️ GIẢNG VIÊN QUAY LẠI!'; al.classList.add('show'); }
     gameState='QUIZ';
-    document.getElementById('th-alert').classList.remove('show');
-    currentQuestion=buildQuestion();
-    const q=currentQuestion, w=q.w;
+    const kind=chooseKind();
+    setTimeout(()=>{
+      if(gameState!=='QUIZ') return;
+      al.classList.remove('show');
+      if(kind==='single') openQuizModal(fromSnitch?'snitch':'single');
+      else openTestIntro(kind,fromSnitch);
+    },400);
+  }
+  function setCall(kind){
+    const c=document.getElementById('th-call');
+    c.className='th-call'+(kind==='test15'?' test':kind==='midterm'?' mid':kind==='snitch'?' snitch':'');
+    const T={
+      single:['👨‍🏫',EN?'The teacher is calling on you!':'Giảng viên gọi tên bạn!',EN?'"You in the back row, answer this question right now!"':'"Em sinh viên bàn cuối trả lời ngay câu hỏi này!"'],
+      snitch:['😠',EN?'Someone told on you!':'Có bạn méc thầy!',EN?'"So you want to leave? Answer this first!"':'"Định trốn học à? Trả lời câu này đã!"'],
+      test15:['📝',EN?'15-minute quiz!':'Kiểm tra 15 phút!',EN?'"Everyone take out a sheet of paper!"':'"Cả lớp lấy giấy ra làm bài!"'],
+      midterm:['📚',EN?'Midterm exam!':'Thi giữa kì!',EN?'"Put your books away — the midterm starts now!"':'"Cất sách vở, bắt đầu thi giữa kì!"']
+    }[kind];
+    document.getElementById('th-call-ic').textContent=T[0]; document.getElementById('th-call-t').textContent=T[1]; document.getElementById('th-call-d').textContent=T[2];
+  }
+  function renderQuestion(q,secs){
+    const w=q.w;
     const qh=document.getElementById('th-qh');
     qh.textContent=q.vi2cn?w.meaning:w.hanzi; qh.classList.toggle('vi',q.vi2cn);
     document.getElementById('th-qp').textContent=q.vi2cn?'':w.py;
@@ -7050,30 +7136,113 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
       b.onclick=()=>submitAnswer(i); box.appendChild(b);
     });
     quizTimeLeft=100; const bar=document.getElementById('th-timer'); bar.style.width='100%';
-    document.getElementById('th-quiz').classList.add('show');
+    const step=100/(secs*10);
     clearInterval(quizTimerInterval);
     quizTimerInterval=setInterval(()=>{
-      quizTimeLeft-=2.5; bar.style.width=Math.max(0,quizTimeLeft)+'%';
+      quizTimeLeft-=step; bar.style.width=Math.max(0,quizTimeLeft)+'%';
       if(quizTimeLeft<=0){ clearInterval(quizTimerInterval); submitAnswer(-1); }
     },100);
   }
-  function submitAnswer(idx){
-    if(gameState!=='QUIZ') return;
-    clearInterval(quizTimerInterval);
+  function openQuizModal(kind){
+    gameState='QUIZ'; test=null;
+    document.getElementById('th-alert').classList.remove('show');
+    setCall(kind||'single');
+    document.getElementById('th-testbar').classList.remove('show');
+    currentQuestion=buildQuestion();
+    document.getElementById('th-quiz').classList.add('show');
+    renderQuestion(currentQuestion,4);
+  }
+  // ---- Bài kiểm tra 15 phút (5–7 câu) / thi giữa kì (8–10 câu)
+  function openTestIntro(kind,fromSnitch){
+    const n=kind==='midterm'?8+Math.floor(Math.random()*3):5+Math.floor(Math.random()*3);
+    const need=Math.ceil(n*(kind==='midterm'?0.7:0.6));
+    test={kind,n,i:0,list:[],results:[],need};
+    for(let k=0;k<n;k++) test.list.push(buildQuestion());
+    if(kind==='midterm') midtermDone=true; else test15Count++;
+    playSound('alert');
+    const title=kind==='midterm'?(EN?'📚 MIDTERM EXAM':'📚 THI GIỮA KÌ'):(EN?'📝 15-MINUTE QUIZ':'📝 KIỂM TRA 15 PHÚT');
+    const pts=kind==='midterm'?30:15;
+    document.getElementById('th-test-intro-box').innerHTML=`
+      <div class="big">${kind==='midterm'?'📚':'📝'}</div>
+      <h2 class="th-display">${title}</h2>
+      <p>${fromSnitch?(EN?'A classmate told on you, so the teacher hands out a test!':'Bị bạn méc thầy, cả lớp phải làm bài kiểm tra!'):(EN?'The teacher turns around and announces a surprise test!':'Thầy cô quay lại và bất ngờ cho làm bài kiểm tra!')}</p>
+      <div class="rule">${EN?`<b>${n} questions</b> · 5 seconds each<br>Pass: at least <b>${need}/${n}</b> correct → <b>+${pts} points</b> per correct answer<br>Fail: you are <b>sent back to your seat!</b>`
+        :`<b>${n} câu hỏi</b> · mỗi câu 5 giây<br>Đạt: đúng ít nhất <b>${need}/${n}</b> câu → <b>+${pts} điểm</b> mỗi câu đúng<br>Không đạt: <b>bị đuổi về chỗ ngồi!</b>`}</div>
+      <button type="button" class="th-btn th-display" onclick="thBeginTest()">${EN?'START THE TEST':'BẮT ĐẦU LÀM BÀI'}</button>`;
+    document.getElementById('th-test-intro').classList.add('show');
+  }
+  window.thBeginTest=function(){
+    if(!test) return;
+    document.getElementById('th-test-intro').classList.remove('show');
+    setCall(test.kind);
+    document.getElementById('th-testbar').classList.add('show');
+    document.getElementById('th-quiz').classList.add('show');
+    nextTestQuestion();
+  };
+  function renderTestBar(){
+    document.getElementById('th-test-no').textContent=(EN?'Question ':'Câu ')+(test.i+1)+'/'+test.n+(EN?` · need ${test.need}`:` · cần đúng ${test.need}`);
+    document.getElementById('th-test-dots').innerHTML=Array.from({length:test.n},(_,k)=>`<i class="${k<test.results.length?(test.results[k]?'ok':'bad'):(k===test.i?'cur':'')}"></i>`).join('');
+  }
+  function nextTestQuestion(){
+    if(test.i>=test.n){ finishTest(); return; }
+    currentQuestion=test.list[test.i];
+    renderTestBar();
+    renderQuestion(currentQuestion,5);
+  }
+  function finishTest(){
     document.getElementById('th-quiz').classList.remove('show');
-    const w=currentQuestion.w;
-    if(idx===currentQuestion.answer){
-      playSound('correct'); score+=20; correctAnswers++;
+    document.getElementById('th-testbar').classList.remove('show');
+    const ok=test.results.filter(Boolean).length, pass=ok>=test.need;
+    const pts=pass?ok*(test.kind==='midterm'?30:15):0;
+    if(pass){ score+=pts; document.getElementById('th-score').textContent=score; playSound('win'); } else playSound('wrong');
+    const name=test.kind==='midterm'?(EN?'Midterm':'Thi giữa kì'):(EN?'15-minute quiz':'Kiểm tra 15 phút');
+    document.getElementById('th-test-res-box').innerHTML=`
+      <div class="big">${pass?'🎉':'😵'}</div>
+      <h2 class="th-display">${name}: ${pass?(EN?'PASSED!':'ĐẠT!'):(EN?'FAILED!':'KHÔNG ĐẠT!')}</h2>
+      <div class="score th-display ${pass?'pass':'fail'}">${ok}/${test.n}</div>
+      <p>${pass?(EN?`Great! +${pts} points. Keep sneaking!`:`Giỏi lắm! +${pts} điểm. Tiếp tục trốn thôi!`):(EN?`You needed ${test.need} correct answers. Back to your seat!`:`Cần đúng ít nhất ${test.need} câu. Bị đuổi về chỗ ngồi!`)}</p>
+      <button type="button" class="th-btn ${pass?'':'amber'} th-display" onclick="thCloseTest()">${pass?(EN?'KEEP SNEAKING':'TIẾP TỤC TRỐN'):(EN?'BACK TO MY SEAT…':'VỀ CHỖ NGỒI…')}</button>`;
+    test.passed=pass;
+    document.getElementById('th-test-res').classList.add('show');
+  }
+  window.thCloseTest=function(){
+    if(!test) return;
+    const pass=test.passed; test=null; snitched=false;
+    document.getElementById('th-test-res').classList.remove('show');
+    if(pass){ teacherState='WRITING'; gameState='PLAYING'; lastTeacherTurnTime=Date.now(); }
+    else { isSneaking=false; caughtFlash=70; gameState=progress>0?'RETURNING':'PLAYING'; if(gameState==='PLAYING'){ teacherState='WRITING'; lastTeacherTurnTime=Date.now(); } }
+  };
+  function submitAnswer(idx){
+    if(gameState!=='QUIZ'||!currentQuestion) return;
+    clearInterval(quizTimerInterval);
+    const w=currentQuestion.w, right=idx===currentQuestion.answer;
+    if(right) correctAnswers++;
+    else { if(!missed.includes(w)) missed.push(w); queue.unshift(w); }
+    if(test){
+      // trong bài kiểm tra: hiện đúng/sai rồi sang câu tiếp
+      const btns=[...document.querySelectorAll('#th-opts .th-opt')];
+      btns.forEach((b,i)=>{ b.disabled=true; if(i===currentQuestion.answer) b.classList.add('ok'); });
+      if(!right&&btns[idx]) btns[idx].classList.add('bad');
+      playSound(right?'correct':'wrong');
+      if(right&&soundOn()&&typeof speakCN==='function'){ try{speakCN(w.hanzi);}catch(e){} }
+      test.results.push(right); test.i++; currentQuestion=null;
+      renderTestBar();
+      setTimeout(()=>{ if(test) nextTestQuestion(); }, right?650:1100);
+      return;
+    }
+    document.getElementById('th-quiz').classList.remove('show');
+    snitched=false;
+    if(right){
+      playSound('correct'); score+=20;
       document.getElementById('th-score').textContent=score;
       teacherState='WRITING'; gameState='PLAYING'; lastTeacherTurnTime=Date.now();
       if(soundOn()&&typeof speakCN==='function'){ try{speakCN(w.hanzi);}catch(e){} }
     } else {
       playSound('wrong'); isSneaking=false; caughtFlash=70;
-      if(!missed.includes(w)) missed.push(w);
-      queue.unshift(w);
       gameState=progress>0?'RETURNING':'PLAYING';
       if(gameState==='PLAYING'){ teacherState='WRITING'; lastTeacherTurnTime=Date.now(); }
     }
+    currentQuestion=null;
   }
   function startExit(){ gameState='EXITING'; isSneaking=false; sneakBtnUp(); exitTimer=0; }
   function triggerVictory(){
@@ -7095,9 +7264,10 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
     clearInterval(quizTimerInterval);
     score=0; correctAnswers=0; progress=0; exitTimer=0; caughtFlash=0; particles=[]; missed=[]; queue=sgShuffle(words.slice());
     teacherState='WRITING'; isSneaking=false; currentQuestion=null;
+    test=null; test15Count=0; midtermDone=false; snitchTimer=0; snitchIdx=-1; snitched=false; lastSnitch=Date.now();
     document.getElementById('th-score').textContent='0';
     document.getElementById('th-progress').style.width='0%';
-    ['th-quiz','th-result'].forEach(id=>document.getElementById(id).classList.remove('show'));
+    ['th-quiz','th-result','th-test-intro','th-test-res'].forEach(id=>document.getElementById(id).classList.remove('show'));
     document.getElementById('th-alert').classList.remove('show');
   }
   thStartGame=function(){
@@ -7132,14 +7302,14 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
     document.getElementById('th-chip').textContent=(lv?lv.label+' · ':'')+gpLessonLabel(id,idx);
     applyTools(); resetState(); syncRunnerFaces(); gameState='START';
     document.getElementById('th-start-desc').innerHTML=EN
-      ?`You and your buddy sit in the back row. Hold <b class="amb">SNEAK</b> while the teacher writes on the board to slip out of the door.<br><br><span class="red">⚠️ Watch out:</span> every 2 seconds the teacher turns around and calls on you with a word from <b class="amb">this lesson (${words.length} words)</b>. Answer correctly to keep sneaking — answer wrong and you get <b class="red">SENT BACK TO YOUR SEAT!</b>`
-      :`Bạn và đồng bọn đang ở hàng ghế cuối cùng. Nhấn giữ nút <b class="amb">TRỐN</b> khi thầy cô đang viết bảng để lẻn ra cửa.<br><br><span class="red">⚠️ Chú ý:</span> Cứ 2 giây giảng viên sẽ quay lại hỏi bạn một từ trong <b class="amb">bài này (${words.length} từ)</b>. Trả lời đúng để tiếp tục trốn, trả lời sai bạn sẽ bị <b class="red">ĐUỔI VỀ CHỖ NGỒI BAN ĐẦU!</b>`;
+      ?`You and your buddy sit in the back row. Hold <b class="amb">SNEAK</b> while the teacher writes on the board to slip out of the door.<br><br><span class="red">⚠️ Watch out:</span> every 2 seconds the teacher turns around and calls on you with a word from <b class="amb">this lesson (${words.length} words)</b>. Answer correctly to keep sneaking — answer wrong and you get <b class="red">SENT BACK TO YOUR SEAT!</b><br><br>📝 Sometimes the teacher gives a <b class="amb">15-minute quiz</b> (5–7 questions) or a <b class="amb">midterm</b> (8–10 questions). 🙋 Watch out for classmates who <b class="red">tell on you</b> while you sneak!`
+      :`Bạn và đồng bọn đang ở hàng ghế cuối cùng. Nhấn giữ nút <b class="amb">TRỐN</b> khi thầy cô đang viết bảng để lẻn ra cửa.<br><br><span class="red">⚠️ Chú ý:</span> Cứ 2 giây giảng viên sẽ quay lại hỏi bạn một từ trong <b class="amb">bài này (${words.length} từ)</b>. Trả lời đúng để tiếp tục trốn, trả lời sai bạn sẽ bị <b class="red">ĐUỔI VỀ CHỖ NGỒI BAN ĐẦU!</b><br><br>📝 Thỉnh thoảng thầy cô sẽ cho <b class="amb">kiểm tra 15 phút</b> (5–7 câu) hoặc <b class="amb">thi giữa kì</b> (8–10 câu). 🙋 Coi chừng các bạn cùng lớp <b class="red">méc thầy</b> khi bạn đang lẻn đi!`;
     renderSkins();
     document.getElementById('th-start').classList.add('show');
     requestAnimationFrame(()=>{ resizeCanvas(); startLoop(); });
   };
   esStop=function(){
-    clearInterval(quizTimerInterval); isSneaking=false; sneakBtnUp();
+    clearInterval(quizTimerInterval); isSneaking=false; sneakBtnUp(); test=null;
     if(gameState!=='WIN') gameState='START';
     if(rafId){ cancelAnimationFrame(rafId); rafId=null; }
   };
@@ -7157,10 +7327,10 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
     if(e.ctrlKey||e.metaKey||e.altKey) return;
     if(document.getElementById('th-quiz').classList.contains('show')){
       const m={'1':0,'2':1,'3':2,'4':3,'a':0,'b':1,'c':2,'d':3}; const k=(e.key||'').toLowerCase();
-      if(k in m){ e.preventDefault(); submitAnswer(m[k]); }
+      if(k in m){ e.preventDefault(); const bb=document.querySelectorAll('#th-opts .th-opt')[m[k]]; if(bb&&!bb.disabled) submitAnswer(m[k]); }
       return;
     }
-    const modalBtn=['th-start','th-result'].map(id=>document.getElementById(id)).find(x=>x.classList.contains('show'));
+    const modalBtn=['th-start','th-result','th-test-intro','th-test-res'].map(id=>document.getElementById(id)).find(x=>x.classList.contains('show'));
     if(modalBtn){ if(e.key==='Enter'){ const b=modalBtn.querySelector('.th-btn'); if(b){e.preventDefault(); b.click();} } return; }
     if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) startSneaking(); }
   });
@@ -7169,7 +7339,7 @@ let thTogglePinyin, thToggleSound, thStartGame, esStartLesson, esStop;
 })();
 if(typeof EN_UI!=='undefined') Object.assign(EN_UI,{"🏃 TRỐN HỌC":"🏃 SKIP CLASS","Bàn cuối":"Back row","🚪 Cửa thoát":"🚪 Exit","Điểm số":"Score","Bật/tắt âm thanh":"Sound on/off",
 "⚠️ GIẢNG VIÊN QUAY LẠI!":"⚠️ THE TEACHER IS TURNING!","Nhấn giữ nút":"Hold the","TRỐN (Space)":"SNEAK (Space)","khi thầy cô đang viết bảng!":"button while the teacher writes on the board!",
-"Mẹo:":"Tip:","Cứ 2s thầy/cô sẽ quay lại gọi tên bạn. Trả lời đúng để không bị phát hiện!":"Every 2s the teacher turns around and calls on you. Answer correctly to stay hidden!",
+"Mẹo:":"Tip:","Cứ 2s thầy/cô sẽ quay lại gọi tên bạn. Trả lời đúng để không bị phát hiện!":"Every 2s the teacher turns around and calls on you. Answer correctly to stay hidden!","Cứ 2s thầy/cô sẽ quay lại gọi tên bạn. Coi chừng bài kiểm tra 15 phút, thi giữa kì và bạn cùng lớp méc thầy!":"Every 2s the teacher turns around and calls on you. Watch out for 15-minute quizzes, the midterm and classmates who tell on you!",
 "🏃‍♂️ TRỐN KHỎI LỚP":"🏃‍♂️ SNEAK OUT","TRỐN HỌC - HSK QUIZ":"SKIP CLASS - HSK QUIZ","Chọn nhân vật của bạn":"Choose your character","BẮT ĐẦU VÀO LỚP HỌC":"START CLASS",
 "Giảng viên gọi tên bạn!":"The teacher is calling on you!","\"Em sinh viên bàn cuối trả lời ngay câu hỏi này!\"":"\"You in the back row, answer this question right now!\"",
 "TRỐN HỌC THÀNH CÔNG!":"YOU SKIPPED CLASS!","Bạn đã lẻn ra khỏi lớp học an toàn mà không bị thầy phát hiện!":"You slipped out of class without the teacher noticing!",
