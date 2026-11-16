@@ -9030,7 +9030,7 @@ function rvNameWarn(){
 }
 function rvLastSent(lid){ try{ return JSON.parse(localStorage.getItem('nana-rv-sent:'+lid)||'null'); }catch(e){ return null; } }
 function rvOutbox(){ try{ return JSON.parse(localStorage.getItem('nana-rv-outbox')||'[]')||[]; }catch(e){ return []; } }
-function rvOutboxSet(a){ try{ if(a.length) localStorage.setItem('nana-rv-outbox',JSON.stringify(a.slice(-40))); else localStorage.removeItem('nana-rv-outbox'); }catch(e){} }
+function rvOutboxSet(a){ try{ if(a.length) localStorage.setItem('nana-rv-outbox',JSON.stringify(a.slice(-150))); else localStorage.removeItem('nana-rv-outbox'); }catch(e){} }
 function rvSentPaint(){}
 function rvSentRestore(){
   const lid=String(activeLesson);
@@ -9040,23 +9040,24 @@ function rvSentRestore(){
 function rvSendPayload(p){
   return hwSend(p).then(r=>{
     if(!(r&&r.ok)) throw new Error((r&&r.msg)||'error');
-    try{ localStorage.setItem('nana-rv-sent:'+p.lessonId,JSON.stringify({a:p.answer,n:p.student,t:hwWhen()})); }catch(e){}
-    rvOutboxSet(rvOutbox().filter(x=>!(x.lessonId===p.lessonId&&x.student===p.student)));
+    try{ localStorage.setItem('nana-rv-sent:'+p.lessonId+':'+(p.q||1),JSON.stringify({a:p.answer,n:p.student,t:hwWhen()})); }catch(e){}
+    rvOutboxSet(rvOutbox().filter(x=>!(x.lessonId===p.lessonId&&(x.q||1)===(p.q||1)&&x.student===p.student)));
     return r;
   });
 }
-function rvReport(lid){
-  const L=LESSONS[lid]; if(!L||!L.translate||!L.translate.length) return;
-  const res=rvResult[lid+':0'], nm=rvNameNow(); if(!res||nm.length<2||typeof hwSend!=='function'||!HW_SCRIPT_URL) return;
-  const last=rvLastSent(lid);
-  if(last&&last.a===res.user&&last.n===nm){ rvSentPaint(lid,'ok',last.t); return; }
-  const ex=L.translate[0], lv=levelForLesson(lid), cfg=lv&&hskLevelCfg(lv);
+/* gửi (âm thầm) bài làm của MỌI câu mỗi lần học viên bấm Kiểm tra */
+function rvReport(lid,i){
+  i=i||0;
+  const L=LESSONS[lid]; if(!L||!L.translate||!L.translate[i]) return;
+  const res=rvResult[lid+':'+i], nm=rvNameNow(); if(!res||nm.length<2||typeof hwSend!=='function'||!HW_SCRIPT_URL) return;
+  const q=i+1;
+  let last=null; try{ last=JSON.parse(localStorage.getItem('nana-rv-sent:'+lid+':'+q)||'null')||(q===1?rvLastSent(lid):null); }catch(e){}
+  if(last&&last.a===res.user&&last.n===nm) return;
+  const ex=L.translate[i], lv=levelForLesson(lid), cfg=lv&&hskLevelCfg(lv);
   let t=String(L.title||'').replace(/^HSK\s*\d\s*·\s*/i,'');
   const p={type:'review',student:nm,level:cfg?cfg.label.replace(/\s/g,''):'',lessonId:lid,lessonNo:(t.split(':')[0]||'').trim(),lessonTitle:t,
-    q:1,vi:ex.vi,answer:res.user,correct:ex.cn,result:res.exact?'Đúng':Math.round(res.sim*100)+'%',lang:APP_LANG,sentAt:new Date().toISOString(),sid:hwSid()};
-  rvSentPaint(lid,'busy');
-  rvSendPayload(p).then(()=>{ if(String(activeLesson)===lid) rvSentPaint(lid,'ok',hwWhen()); })
-    .catch(()=>{ const a=rvOutbox().filter(x=>!(x.lessonId===lid&&x.student===nm)); a.push(p); rvOutboxSet(a); if(String(activeLesson)===lid) rvSentPaint(lid,'wait'); });
+    q,vi:'Câu '+q+': '+ex.vi,answer:res.user,correct:ex.cn,result:res.exact?'Đúng':Math.round(res.sim*100)+'%',lang:APP_LANG,sentAt:new Date().toISOString(),sid:hwSid()};
+  rvSendPayload(p).catch(()=>{ const a=rvOutbox().filter(x=>!(x.lessonId===lid&&(x.q||1)===q&&x.student===nm)); a.push(p); rvOutboxSet(a); });
 }
 let rvFlushing=false;
 function rvFlushOutbox(){
@@ -9073,7 +9074,7 @@ setTimeout(rvFlushOutbox,9000);
     { const inp=document.getElementById(`rvi-${lid}-${i}`);
       if(inp&&inp.value.trim()&&rvNameNow().length<2){ rvNameWarn(); return; } }
     const r=_chk.apply(this,arguments);
-    if(i===0){ try{ rvReport(lid); }catch(e){} }
+    try{ rvReport(lid,i); }catch(e){}
     return r;
   };
   const _rr=renderReview;
